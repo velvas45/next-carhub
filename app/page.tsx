@@ -1,113 +1,167 @@
-import Image from 'next/image'
+"use client";
 
+import { Hero, CustomFilter, SearchBar, CarCard, ShowMore } from "@/components";
+import { fuels, yearsOfProduction } from "@/constants/index";
+import { fetchCars } from "@/utils/index";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { Player } from "@lottiefiles/react-lottie-player";
+import { CarProps } from "@/types/index";
+
+// CLIENT SIDE RENDER
 export default function Home() {
+  const [allCars, setAllCars] = useState<CarProps[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // search stats
+  const [manufacturer, setManufacturer] = useState("");
+  const [model, setModel] = useState("");
+
+  // filter stats
+  const [fuel, setFuel] = useState("");
+  const [year, setYear] = useState("2023");
+
+  // pagination stats
+  const [limit, setLimit] = useState(10);
+
+  const getCars = async () => {
+    setIsLoading(true);
+    try {
+      const result = await fetchCars({
+        manufacturer: manufacturer || "",
+        year: +year || 2022,
+        fuel: fuel || "",
+        limit: limit || 10,
+        model: model || "",
+      });
+
+      console.log(result);
+
+      setAllCars(result);
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getCars();
+  }, [fuel, year, limit, manufacturer, model]);
+
+  const isDataEmpty = !Array.isArray(allCars) || allCars.length < 1 || !allCars;
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className="overflow-hidden">
+      <Hero />
+
+      <div className="mt-12 padding-x padding-y max-width" id="discover">
+        <div className="home__text-container">
+          <h1 className="text-4xl font-extrabold">Car Catalogue</h1>
+          <p>Explore the cars you might like</p>
         </div>
-      </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+        <div className="home__filters">
+          <SearchBar setManufacturer={setManufacturer} setModel={setModel} />
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+          <div className="home__filter-container">
+            <CustomFilter title="fuel" options={fuels} setFilter={setFuel} />
+            <CustomFilter
+              title="year"
+              options={yearsOfProduction}
+              setFilter={setYear}
+            />
+          </div>
+        </div>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+        {isLoading ? (
+          <div className="mt-16 w-full flex-center">
+            <Player
+              autoplay
+              loop
+              className="w-[400px] h-[400px]"
+              src="https://lottie.host/7596b38f-c789-4d9f-a97b-3a801ab2a317/EMKJN2OHAv.json"
+              // src="https://lottie.host/6f85b830-388b-4841-92e6-1f5ef281e836/tLsTT2Ugss.json"
+            />
+          </div>
+        ) : (
+          <>
+            {allCars.length > 0 ? (
+              <section>
+                <div className="home__cars-wrapper">
+                  {allCars?.map((car, idx) => (
+                    <CarCard car={car} key={idx} />
+                  ))}
+                </div>
+                <ShowMore
+                  pageNumber={limit / 10}
+                  isNext={limit > allCars.length}
+                  setLimit={setLimit}
+                />
+              </section>
+            ) : (
+              <div className="home__error-container">
+                <h2 className="text-black text-xl font-bold">
+                  Oops, no results
+                </h2>
+                {/* <p>{allCars?.messages}</p> */}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </main>
-  )
+  );
 }
+
+// SERVER SIDE RENDER
+// export default async function Home({ searchParams }) {
+//   const allCars = await fetchCars({
+//     manufacturer: searchParams.manufacturer || "",
+//     year: searchParams.year || 2022,
+//     fuel: searchParams.fuel || "",
+//     limit: searchParams.limit || 10,
+//     model: searchParams.model || "",
+//   });
+
+//   const isDataEmpty = !Array.isArray(allCars) || allCars.length < 1 || !allCars;
+//   return (
+//     <main className="overflow-hidden">
+//       <Hero />
+
+//       <div className="mt-12 padding-x padding-y max-width" id="discover">
+//         <div className="home__text-container">
+//           <h1 className="text-4xl font-extrabold">Car Catalogue</h1>
+//           <p>Explore the cars you might like</p>
+//         </div>
+
+//         <div className="home__filters">
+//           <SearchBar />
+
+//           <div className="home__filter-container">
+//             <CustomFilter title="fuel" options={fuels} />
+//             <CustomFilter title="year" options={yearsOfProduction} />
+//           </div>
+//         </div>
+
+//         {!isDataEmpty ? (
+//           <section>
+//             <div className="home__cars-wrapper">
+//               {allCars?.map((car) => (
+//                 <CarCard car={car} />
+//               ))}
+//             </div>
+//             <ShowMore
+//               pageNumber={(searchParams.limit || 10) / 10}
+//               isNext={(searchParams.limit || 10) > allCars.length}
+//             />
+//           </section>
+//         ) : (
+//           <div className="home__error-container">
+//             <h2 className="text-black text-xl font-bold">Oops, no results</h2>
+//             <p>{allCars?.messages}</p>
+//           </div>
+//         )}
+//       </div>
+//     </main>
+//   );
+// }
